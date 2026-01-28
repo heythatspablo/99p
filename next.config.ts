@@ -10,10 +10,6 @@ const nextConfig: NextConfig = {
       },
     ],
   },
-  // Custom domain configuration
-  assetPrefix: process.env.NODE_ENV === 'production' ? 'https://99pablos.com' : undefined,
-  // Force trailing slash for consistency
-  trailingSlash: true,
 };
 
 export default nextConfig;
