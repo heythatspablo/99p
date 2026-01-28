@@ -8,6 +8,9 @@ const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 export async function POST(request: NextRequest) {
   try {
+    console.log('Supabase URL:', supabaseUrl);
+    console.log('Supabase Key exists:', !!supabaseAnonKey);
+    
     const body = await request.json();
     const { name, email, message } = body;
 
@@ -28,6 +31,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    console.log('Attempting insert with data:', { name: name.trim(), email: email.trim().toLowerCase() });
+
     // Insert into Supabase
     const { data, error } = await supabase
       .from('contact_form_submissions')
@@ -42,7 +47,7 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (error) {
-      console.error('Supabase error:', error);
+      console.error('Supabase error details:', JSON.stringify(error, null, 2));
       return NextResponse.json(
         { error: 'Failed to submit form' },
         { status: 500 }

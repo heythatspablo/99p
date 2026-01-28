@@ -1,72 +1,59 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse } from 'next/server'
+import { createCheckout } from '@/lib/lemonsqueezy'
+import type { CheckoutSessionRequest, CheckoutSessionResponse } from '@/lib/types/lemonsqueezy'
 
 export async function POST(request: NextRequest) {
   try {
-    const { items } = await request.json();
+    const body: CheckoutSessionRequest = await request.json()
+    const { variantId, customerEmail, customData } = body
 
-    if (!items || items.length === 0) {
-      return NextResponse.json({ error: "No items in cart" }, { status: 400 });
+    if (!variantId || !customerEmail) {
+      return NextResponse.json(
+        { error: 'Missing required fields: variantId and customerEmail' },
+        { status: 400 }
+      )
     }
 
-    const apiKey = process.env.LEMONSQUEEZY_API_KEY;
-    const storeId = process.env.LEMONSQUEEZY_STORE_ID;
-
-    if (!apiKey || !storeId) {
-      return NextResponse.json({ error: "Lemon Squeezy configuration missing" }, { status: 500 });
+    const storeId = process.env.LEMONSQUEEZY_STORE_ID
+    if (!storeId) {
+      return NextResponse.json(
+        { error: 'Lemon Squeezy store not configured' },
+        { status: 500 }
+      )
     }
 
-    const checkoutData = {
-      data: {
-        type: "checkouts",
-        attributes: {
-          checkout_data: {
-            custom: {
-              cart_items: items.map((item: any) => ({
-                product_id: item.product.id,
-                quantity: item.quantity,
-              })),
-            },
-          },
-        },
-        relationships: {
-          store: {
-            data: {
-              type: "stores",
-              id: storeId,
-            },
-          },
-          variant: {
-            data: {
-              type: "variants",
-              id: items[0].product.variantId || "",
-            },
-          },
-        },
+    const checkout = await createCheckout(storeId, {
+      checkoutData: {
+        email: customerEmail,
+        custom: customData || {},
       },
-    };
-
-    const response = await fetch("https://api.lemonsqueezy.com/v1/checkouts", {
-      method: "POST",
-      headers: {
-        Accept: "application/vnd.api+json",
-        "Content-Type": "application/vnd.api+json",
-        Authorization: `Bearer ${apiKey}`,
+      productOptions: {
+        enabledVariants: [variantId],
       },
-      body: JSON.stringify(checkoutData),
-    });
+      checkoutOptions: {
+        embed: false,
+        buttonColor: '#2383E2',
+      },
+    })
 
-    if (!response.ok) {
-      const errorData = await response.json();
-      console.error("Lemon Squeezy API error:", errorData);
-      return NextResponse.json({ error: "Failed to create checkout", details: errorData }, { status: response.status });
+    if (!checkout.data) {
+      return NextResponse.json(
+        { error: 'Failed to create checkout session' },
+        { status: 500 }
+      )
     }
 
-    const data = await response.json();
-    const checkoutUrl = data.data.attributes.url;
+    const response: CheckoutSessionResponse = {
+      checkoutUrl: checkout.data.attributes.url,
+      checkoutId: checkout.data.id,
+    }
 
-    return NextResponse.json({ checkoutUrl });
+    return NextResponse.json(response)
   } catch (error) {
-    console.error("Checkout error:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    console.error('Checkout creation error:', error)
+    return NextResponse.json(
+      { error: 'Failed to create checkout session' },
+      { status: 500 }
+    )
   }
 }
