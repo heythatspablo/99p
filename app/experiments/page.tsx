@@ -55,7 +55,7 @@ export default function CaseStudyListingPage() {
                       </div>
                     ) : (
                       <img
-                        src={study.imagePlaceholder}
+                        src="/images/projects/placeholder.jpg"
                         alt={study.title}
                         className="absolute inset-0 w-full h-full object-cover"
                       />

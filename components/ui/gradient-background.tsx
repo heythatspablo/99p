@@ -320,6 +320,7 @@ export function GradientBackground({
       suppressHydrationWarning
     >
       <ShaderGradientCanvas
+        // @ts-ignore
         importedFiber={{ ...fiber, ...drei, ...reactSpring }}
         pointerEvents="none"
         style={{
@@ -330,6 +331,7 @@ export function GradientBackground({
           height: "100%",
         }}
       >
+        {/* @ts-ignore */}
         <ShaderGradient {...activePreset} />
       </ShaderGradientCanvas>
     </div>
