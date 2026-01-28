@@ -12,9 +12,6 @@ export const NAVIGATION_ITEMS = [
   { label: "About", href: "/about" },
   { label: "Consulting", href: "/consulting" },
   { label: "Clarity Sessions", href: "/clarity-sessions" },
-  { label: "Channel", href: "/channel" },
-  { label: "Blog", href: "/blog" },
-  { label: "Pricing", href: "/pricing" },
 ];
 
 export const TEAM_MEMBERS = [
